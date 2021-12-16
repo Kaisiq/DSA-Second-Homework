@@ -1,3 +1,7 @@
 # ninja log v5
-195	282	1639659275850645536	DSA_Second_Homework	6ada99ca39e40f5f
-0	194	1639659275762644141	CMakeFiles/DSA_Second_Homework.dir/main.cpp.o	99aa7e1c04f67828
+266	315	1639676383903126621	DSA_Second_Homework	6ada99ca39e40f5f
+1	11179	1639675461480509410	CMakeFiles/DSA_Second_Homework.dir/tests/tests.cpp.o	43d75fa441cfb367
+3	45	1639676408270476882	build.ninja	bc82465879ecd8ff
+1	266	1639676383851126482	CMakeFiles/DSA_Second_Homework.dir/main.cpp.o	99aa7e1c04f67828
+0	231	1639676791568280765	CMakeFiles/DSA_Second_Homework.dir/main.cpp.o	99aa7e1c04f67828
+231	282	1639676791616279478	DSA_Second_Homework	6ada99ca39e40f5f

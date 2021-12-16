@@ -37,3 +37,5 @@ private:
     Node* root;
     size_t size;
 };
+
+#include "implementation.inl"

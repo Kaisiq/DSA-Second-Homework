@@ -78,12 +78,6 @@ build CMakeFiles/DSA_Second_Homework.dir/main.cpp.o: CXX_COMPILER__DSA_Second_Ho
   OBJECT_DIR = CMakeFiles/DSA_Second_Homework.dir
   OBJECT_FILE_DIR = CMakeFiles/DSA_Second_Homework.dir
 
-build CMakeFiles/DSA_Second_Homework.dir/tests/tests.cpp.o: CXX_COMPILER__DSA_Second_Homework_Debug /home/dahudohu/Programming!/University/DSA-Second-Homework/tests/tests.cpp || cmake_object_order_depends_target_DSA_Second_Homework
-  DEP_FILE = CMakeFiles/DSA_Second_Homework.dir/tests/tests.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  OBJECT_DIR = CMakeFiles/DSA_Second_Homework.dir
-  OBJECT_FILE_DIR = CMakeFiles/DSA_Second_Homework.dir/tests
-
 
 # =============================================================================
 # Link build statements for EXECUTABLE target DSA_Second_Homework
@@ -92,7 +86,7 @@ build CMakeFiles/DSA_Second_Homework.dir/tests/tests.cpp.o: CXX_COMPILER__DSA_Se
 #############################################
 # Link the executable DSA_Second_Homework
 
-build DSA_Second_Homework: CXX_EXECUTABLE_LINKER__DSA_Second_Homework_Debug CMakeFiles/DSA_Second_Homework.dir/main.cpp.o CMakeFiles/DSA_Second_Homework.dir/tests/tests.cpp.o
+build DSA_Second_Homework: CXX_EXECUTABLE_LINKER__DSA_Second_Homework_Debug CMakeFiles/DSA_Second_Homework.dir/main.cpp.o
   FLAGS = -g
   OBJECT_DIR = CMakeFiles/DSA_Second_Homework.dir
   POST_BUILD = :

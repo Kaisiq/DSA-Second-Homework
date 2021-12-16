@@ -1,15 +1,15 @@
 #pragma once
-#include "Node.h"
 
+class Node;
 class NodeLL{
 private:
     class Box{
     public:
-        Node data;
+        Node* data;
         Box* next;
 
     public:
-        Box(const Node data, Box* nextBox = nullptr)
+        Box(Node* data, Box* nextBox = nullptr)
             : data(data), next(nextBox){}
         bool hasNext() const{
             return next != nullptr;
@@ -27,9 +27,12 @@ public:
 
     bool isEmpty();
     void clear();
-    Box* getFirst();
-    Box* getLast();
-    Box* push(const Node);
+    Node* getFirst();
+    Node* getLast();
+    void push(Node*);
     void pop();
-
+    size_t getSize();
 };
+
+#include "Node.h"
+#include "NodeLL.inl"

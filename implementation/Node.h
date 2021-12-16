@@ -9,7 +9,7 @@ private:
     Node* nextBrother;
 
 public:
-    Node(std::string name, NodeLL* children, Node* brother);
+    Node(std::string name);
     ~Node();
     Node& operator= (const Node& other);
     bool hasChildren();
@@ -17,4 +17,10 @@ public:
     Node* firstChild();
     Node* lastChild();
     std::string getData();
+    void setNextBrother(Node* next);
+    void setChildren(NodeLL* children);
+    void setData(std::string data);
+    int getChildrenSize();
 };
+
+#include "Node.inl"
