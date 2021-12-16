@@ -314,3 +314,4 @@ TEST_CASE("Join") {
     REQUIRE(joined2.num_subordinates(TheBoss) == 4);
     REQUIRE(joined2.num_overloaded() == 2);
 }
+

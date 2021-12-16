@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "NodeLL.h"
 
 using std::string;
 
@@ -33,5 +34,6 @@ public:
 
     //If you need it - add more public methods here
 private:
-    //Add whatever you need here
+    Node* root;
+    size_t size;
 };
