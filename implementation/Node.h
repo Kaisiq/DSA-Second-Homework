@@ -1,26 +1,26 @@
 #pragma once
 #include <string>
 
-class NodeLL;
 class Node{
 private:
     std::string data;
-    NodeLL* children;
+    Node* child;
     Node* nextBrother;
+    Node* parent;
 
 public:
     Node(std::string name);
+    Node();
     ~Node();
     Node& operator= (const Node& other);
-    bool hasChildren();
     Node* getBrother();
-    Node* firstChild();
-    Node* lastChild();
+    Node* getChild();
+    Node* getParent();
     std::string getData();
     void setNextBrother(Node* next);
-    void setChildren(NodeLL* children);
+    void setChild(Node* child);
     void setData(std::string data);
-    int getChildrenSize();
+    void setParent(Node* parent);
 };
 
 #include "Node.inl"

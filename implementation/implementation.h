@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
-#include "NodeLL.h"
+#include <iostream>
+#include "Node.h"
 
 using std::string;
 
@@ -33,6 +34,18 @@ public:
     Hierarchy join(const Hierarchy& right) const;
 
     //If you need it - add more public methods here
+    string printHelper(Node* current) const;
+    int longest_chain_helper(Node* current, int& maxDepth, int currDepth) const;
+    Node* find(const string& name, Node* current) const;
+    int num_subordinates_helper(Node* current, int& count) const;
+    int num_subordinates_close(Node* current) const;
+    bool isEmpty() const;
+    void eval(string toEval);
+    int num_overloaded_helper(Node* current, int level = 20) const;
+    bool isLeaf(Node* curr);
+    bool hasNoBrothers(Node* curr);
+    void incorporate_helper(Node* curr);
+    unsigned long getSalary(Node* who) const;
 private:
     Node* root;
     size_t size;
