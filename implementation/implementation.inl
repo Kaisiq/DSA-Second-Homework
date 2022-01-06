@@ -1,29 +1,38 @@
 #pragma once
-
-#include "implementation.h"
-#include <queue>
-
 Hierarchy::Hierarchy(Hierarchy&& r) noexcept{
-    this->root = r.root;
-    this->size = r.size;
+    this->root = new Node("Uspeshnia");
+    this->size = 1;
+    this->name = r.name;
+    eval(r.print());
 }
 Hierarchy::Hierarchy(const Hierarchy& r){
-    this->root = r.root;
-    this->size = r.size;
+    this->root = new Node("Uspeshnia");
+    this->size = 1;
+    this->name = r.name;
+    eval(r.print());
 }
 Hierarchy::Hierarchy(const string& data){
     if(data != "") {
         this->size = 1;
         this->root = new Node("Uspeshnia");
+        this->name = "";
         eval(data);
     }
     else{
         this->size = 0;
         this->root = nullptr;
+        this->name = "";
     }
 }
 
+Hierarchy::Hierarchy() {
+    this->root = new Node("Uspeshnia");
+    this->size = 1;
+    this->name = "";
+}
+
 void Hierarchy::eval(string toEval){
+    if(toEval == "") return;
     int countLettersToRemove = 0;
     int i=0;
 
@@ -70,6 +79,9 @@ void Hierarchy::eval(string toEval){
     countLettersToRemove = i;
 
 
+    if(!find(employee) && !find(boss)){
+        throw std::runtime_error("The boss doesn't exist in the current hierarchy!");
+    }
     hire(employee, boss);
 
     toEval = toEval.substr(i, toEval.length());
@@ -88,6 +100,43 @@ string Hierarchy::print()const{
     return Hierarchy::printHelper(root);
 }
 
+void swap(Node **xp, Node **yp)
+{
+    Node* temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+
+
+void sortStrArr(std::vector<Node*>& arr){
+    int min;
+    int sz = arr.size();
+    for (int i = 0; i < sz-1; ++i)
+    {
+        min = i;
+        for (int j = i+1; j < sz; ++j) {
+            int len1 = arr[j]->getData().length();
+            int len2 = arr[min]->getData().length();
+            int minlen = len1 < len2 ? len1 : len2;
+            for(int k=0; k<minlen; k++) {
+                if (arr[j]->getData()[k] < arr[min]->getData()[k]) {
+                    min = j;
+                    break;
+                } else if (arr[j]->getData()[k] > arr[min]->getData()[k]) {
+                    break;
+                }
+                if(k == minlen-1 && len1 < len2){
+                    min = j;
+                }
+            }
+        }
+        swap(&arr[min], &arr[i]);
+    }
+}
+
+
+
+
 string Hierarchy::printHelper(Node* current) const{
     std::string result = "";
     if(!current){
@@ -97,25 +146,36 @@ string Hierarchy::printHelper(Node* current) const{
     std::queue<Node*> q;
 
     Node* child = current->getChild();
-    result += current->getData() + "-" + child->getData() + "\n";
-    q.push(child);
+    std::vector<Node*> children;
+    children.push_back(child);
+
     while(child->getBrother()){
         child = child->getBrother();
-        result += current->getData() + "-" + child->getData() + "\n";
+        children.push_back(child);
     }
+    sortStrArr(children);
+    int sz = children.size();
+    for(int i=0; i<sz; ++i){
+        result += current->getData() + "-" + children[i]->getData() + "\n";
+        q.push(children[i]);
+    }
+    children.clear();
 
     while(!q.empty()){
         current = q.front();
         q.pop();
-        while(current){
-            child = current->getChild();
-            if (child) q.push(child);
-            while(child){
-                result += current->getData() + "-" + child->getData() + "\n";
-                child = child->getBrother();
-            }
-            current = current->getBrother();
+        child = current->getChild();
+        while(child){
+            children.push_back(child);
+            child = child->getBrother();
         }
+        sortStrArr(children);
+        sz = children.size();
+        for(int i=0; i<sz; ++i){
+            result += current->getData() + "-" + children[i]->getData() + "\n";
+            q.push(children[i]);
+        }
+        children.clear();
     }
     return result;
 }
@@ -189,6 +249,7 @@ int Hierarchy::num_overloaded_helper(Node* current, int level) const{
         if (num_subordinates_helper(current->getChild(), zero) >= level) {
             overloaded++;
         }
+        zero = 0;
         if(current->getChild()){
             overloaded += num_overloaded_helper(current->getChild(), level);
         }
@@ -263,7 +324,7 @@ unsigned long Hierarchy::getSalary(Node* who) const{
         return -1;
     }
     int zero = 0;
-    int sum = 450* num_subordinates_helper(who, zero);
+    int sum = 450* num_subordinates_close(who->getChild());
     zero = 0;
     sum += 50 * num_subordinates_helper(who->getChild(), zero);
     return sum;
@@ -279,7 +340,6 @@ bool Hierarchy::hasNoBrothers(Node* curr){
 
 
 
-//TODO: fix ~Node
 bool Hierarchy::fire(const string& who){
     Node* toDelete = find(who,root);
     if(!toDelete) return false;
@@ -293,7 +353,7 @@ bool Hierarchy::fire(const string& who){
     //Case 1 : is Leaf, has no brothers
     if(isLeaf(toDelete) && hasNoBrothers(toDelete)){
         toDelete->getParent()->setChild(nullptr);
-//        delete toDelete;
+        delete toDelete;
         size--;
         return true;
     }
@@ -301,11 +361,14 @@ bool Hierarchy::fire(const string& who){
     //case 2: is Leaf, has brothers
     else if(isLeaf(toDelete)){
         Node* prevBrother = toDelete->getParent()->getChild();
-        while(prevBrother->getBrother() != toDelete){
+        while(prevBrother->getBrother() && prevBrother->getBrother() != toDelete){
             prevBrother = prevBrother->getBrother();
         }
         if(prevBrother == toDelete){
             toDelete->getParent()->setChild(toDelete->getBrother());
+            toDelete->setNextBrother(nullptr);
+            toDelete->setChild(nullptr);
+            delete toDelete;
             size--;
             return true;
         }
@@ -315,20 +378,14 @@ bool Hierarchy::fire(const string& who){
         else{
             prevBrother->setNextBrother(nullptr);
         }
-//        delete toDelete;
+        toDelete->setNextBrother(nullptr);
+        toDelete->setChild(nullptr);
+        delete toDelete;
         size--;
         return true;
     }
 
-    //case 3: is not leaf, has no brothers => has child
-    else if(hasNoBrothers(toDelete)){
-        toDelete->getParent()->setChild(toDelete->getChild());
-//        delete toDelete;
-        size--;
-        return true;
-    }
-
-    //case 4: is not leaf, has brothers
+    //case 3: is not leaf, has brothers
     else{
         if(toDelete == toDelete->getParent()->getChild()) {
             Node* child = toDelete->getChild();
@@ -337,7 +394,10 @@ bool Hierarchy::fire(const string& who){
                 child = child->getBrother();
             }
             child->setNextBrother(toDelete->getBrother());
-//            delete toDelete;
+            toDelete->setNextBrother(nullptr);
+            if(toDelete->getChild())
+                toDelete->setChild(nullptr);
+            delete toDelete;
             size--;
             return true;
         }
@@ -351,16 +411,50 @@ bool Hierarchy::fire(const string& who){
             child = child->getBrother();
         }
         child->setNextBrother(toDelete->getBrother());
-        //            delete toDelete;
+        toDelete->setNextBrother(nullptr);
+        if(toDelete->getChild())
+            toDelete->setChild(nullptr);
+        delete toDelete;
         size--;
         return true;
     }
 }
 
+
+
+
 bool Hierarchy::hire(const string& who, const string& boss){
     Node* newEmployee = find(who, root);
     Node* hisBoss = find(boss, root);
 
+
+    if(!hisBoss) {
+        return false;
+    }
+    if(newEmployee){
+        return hire(newEmployee, hisBoss);
+    }
+
+    Node* toHire = new Node(who);
+    Node* bossChild = hisBoss->getChild();
+    if(bossChild) {
+        while (bossChild->getBrother()) {
+            bossChild = bossChild->getBrother();
+        }
+        bossChild->setNextBrother(toHire);
+    }
+    else {
+        hisBoss->setChild(toHire);
+    }
+    toHire->setParent(hisBoss);
+    toHire = nullptr;
+    delete toHire;
+    size++;
+    return true;
+}
+
+
+bool Hierarchy::hire(Node* newEmployee, Node* hisBoss){
     if(newEmployee == root){
         return false;
     }
@@ -373,8 +467,10 @@ bool Hierarchy::hire(const string& who, const string& boss){
             newEmployee->setParent(hisBoss);
             return true;
         }
-        //case 2: boss has no children, employee has brothers
+        //case 2: new boss has no children, employee has brothers left and right
         else if(hisBoss->getChild() == nullptr){
+            Node* tmp = new Node(newEmployee->getData());
+            tmp->setChild(newEmployee->getChild());
             Node* prevBrotherOfEmployee = newEmployee->getParent()->getChild();
             while(prevBrotherOfEmployee->getBrother() && prevBrotherOfEmployee->getBrother() != newEmployee){
                 prevBrotherOfEmployee = prevBrotherOfEmployee->getBrother();
@@ -385,18 +481,36 @@ bool Hierarchy::hire(const string& who, const string& boss){
             else{
                 prevBrotherOfEmployee->setNextBrother(newEmployee->getBrother());
             }
+            tmp->setNextBrother(nullptr);
+            hisBoss->setChild(tmp);
+            tmp->setParent(hisBoss);
+            newEmployee->setChild(nullptr);
             newEmployee->setNextBrother(nullptr);
-            hisBoss->setChild(newEmployee);
-            newEmployee->setParent(hisBoss);
+            delete newEmployee;
             return true;
+        }
+
+        //case 2.5: boss has children, employee has no brothers
+        else if(hasNoBrothers(newEmployee)){
+            Node* firstChildOfBoss = hisBoss->getChild();
+            while(firstChildOfBoss->getBrother()){
+                firstChildOfBoss = firstChildOfBoss->getBrother();
+            }
+            firstChildOfBoss->setNextBrother(newEmployee);
+            newEmployee->getParent()->setChild(nullptr);
+            newEmployee->setParent(hisBoss);
         }
 
         //case 3: boss has children, employee has brothers
         else{
+            Node* tmp = new Node(newEmployee->getData());
+            tmp->setChild(newEmployee->getChild());
+
             Node* prevBrotherOfEmployee = newEmployee->getParent()->getChild();
             while(prevBrotherOfEmployee->getBrother() && prevBrotherOfEmployee->getBrother() != newEmployee){
                 prevBrotherOfEmployee = prevBrotherOfEmployee->getBrother();
             }
+
             if(prevBrotherOfEmployee->getBrother() != newEmployee){
                 newEmployee->getParent()->setChild(newEmployee->getBrother());
             }
@@ -407,76 +521,184 @@ bool Hierarchy::hire(const string& who, const string& boss){
             while(firstChildOfNewParent->getBrother()){
                 firstChildOfNewParent = firstChildOfNewParent->getBrother();
             }
-            firstChildOfNewParent->setNextBrother(newEmployee);
+            firstChildOfNewParent->setNextBrother(tmp);
+            tmp->setNextBrother(nullptr);
+            tmp->setParent(hisBoss);
+            newEmployee->setChild(nullptr);
             newEmployee->setNextBrother(nullptr);
-            newEmployee->setParent(hisBoss);
+            delete newEmployee;
             return true;
         }
     }
     else if(newEmployee && newEmployee->getParent() == hisBoss){
         return true;
     }
-
-
-    if(hisBoss == nullptr){
-        throw std::runtime_error("The employee's boss isn't in the hierarchy");
-    }
-    if(hisBoss){
-        Node* toHire = new Node(who);
-        Node* bossChild = hisBoss->getChild();
-        if(bossChild) {
-            while (bossChild->getBrother()) {
-                bossChild = bossChild->getBrother();
-            }
-            bossChild->setNextBrother(toHire);
-        }
-        else {
-            hisBoss->setChild(toHire);
-        }
-        toHire->setParent(hisBoss);
-        size++;
-        return true;
-    }
+    return false;
 }
 
-void Hierarchy::incorporate(){
-    incorporate_helper(root);
+int Hierarchy::getDepth(Node *who) {
+    int result = 0;
+    while(who->getParent()){
+        who = who->getParent();
+        result += 1;
+    }
+    return result;
 }
 
-void Hierarchy::incorporate_helper(Node *curr) {
-    if(curr->getChild()){
-        incorporate_helper(curr->getChild());
+
+
+void Hierarchy::incorporate() {
+
+    std::stack<Node*> BFS_STACK;
+    std::queue<Node*> BFS_QUEUE;
+    Node* current;
+
+    BFS_QUEUE.push(this->root);
+
+    while(!BFS_QUEUE.empty()){
+        current = BFS_QUEUE.front();
+        BFS_QUEUE.pop();
+        BFS_STACK.push(current);
+
+        while(current){
+            if(current->getChild())
+                BFS_QUEUE.push(current->getChild());
+            current = current->getBrother();
+        }
     }
-    if(!curr->getParent()){
-        return;
-    }
-    if(hasNoBrothers(curr)) return;
+
+    Node* maxSalary;
     Node* brother;
-    while(curr){
-            brother = curr->getBrother();
-        while(brother) {
-            if (getSalary(curr->getData()) > getSalary(brother->getData())){
-                brother = brother->getBrother();
+    std::vector<Node*> brothers;
+    while(!BFS_STACK.empty()){
+        current = BFS_STACK.top();
+        BFS_STACK.pop();
+
+        brother = current;
+        if(!brother || !brother->getBrother()) continue;
+
+        while(brother){
+            brothers.push_back(brother);
+            brother = brother->getBrother();
+        }
+        sortStrArr(brothers);
+
+        int sz = brothers.size();
+        maxSalary = brothers[0];
+        for(int i=1; i<sz; ++i){
+            if(getSalary(maxSalary) < getSalary(brothers[i])){
+                maxSalary = brothers[i];
             }
-            break;
         }
-        if(!curr->getBrother()){
-            break;
+
+        for(int i=0; i<sz; ++i){
+            if(brothers[i] == maxSalary){
+                continue;
+            }
+            else {
+                hire(brothers[i]->getData(), maxSalary->getData());
+            }
         }
-        curr = curr->getBrother();
+        brothers.clear();
     }
-    if(getSalary(curr) == getSalary(curr->getParent()->getChild())){
-        curr = curr->getParent()->getChild();
-    }
-    brother = curr->getParent()->getChild();
-    if(brother == curr) brother = brother->getBrother();
-    hire(brother->getData(), curr->getData());
-    return;
+
 }
 
-void Hierarchy::modernize(){}
+void Hierarchy::modernize(){
+    std::stack<Node*> BFS_STACK;
+    std::queue<Node*> BFS_QUEUE;
+    Node* current;
+
+    BFS_QUEUE.push(this->root);
+    while(!BFS_QUEUE.empty()){
+        current = BFS_QUEUE.front();
+        BFS_QUEUE.pop();
+        BFS_STACK.push(current);
+        current = current->getChild();
+        while(current){
+            BFS_QUEUE.push(current);
+            current = current->getBrother();
+        }
+    }
+
+    while(!BFS_STACK.empty()){
+        current = BFS_STACK.top();
+        BFS_STACK.pop();
+        if(getDepth(current) % 2 == 1){
+            if(!current->getChild()) continue;
+
+            Node* firstOfChildren = current->getChild();
+            Node* lastOfBrothers = current->getParent()->getChild();
+            while(lastOfBrothers->getBrother()){
+                lastOfBrothers = lastOfBrothers->getBrother();
+            }
+            lastOfBrothers->setNextBrother(firstOfChildren);
+            Node* parent = current->getParent();
+            while(firstOfChildren){
+                firstOfChildren->setParent(parent);
+                firstOfChildren = firstOfChildren->getBrother();
+            }
+            Node* beforeCurrent = parent->getChild();
+            if(beforeCurrent == current){
+                parent->setChild(beforeCurrent->getBrother());
+                beforeCurrent->setNextBrother(nullptr);
+                beforeCurrent->setChild(nullptr);
+                delete beforeCurrent;
+                size--;
+                continue;
+            }
+            while(beforeCurrent->getBrother() && beforeCurrent->getBrother() != current){
+                beforeCurrent = beforeCurrent->getBrother();
+            }
+            beforeCurrent->setNextBrother(current->getBrother());
+            current->setNextBrother(nullptr);
+            current->setChild(nullptr);
+            delete current;
+            size--;
+            continue;
+        }
+    }
+}
 
 Hierarchy Hierarchy::join(const Hierarchy& right) const{
-    return *this;
+    if(this->root->getData() != right.root->getData()){
+        throw std::runtime_error("One of the hierarchies has boss other than Uspeshnia");
+    }
+    if(this == &right){
+        Hierarchy result(*this);
+        return result;
+    }
+
+    Hierarchy result;
+    //BFS of both trees simultaniously to create result
+    std::queue<Node*> BFS_Q;
+
+    Node* childL = this->root->getChild();
+    Node* childR = right.root->getChild();
+    if(childL)
+        BFS_Q.push(childL);
+    if(childR)
+        BFS_Q.push(childR);
+
+    while(!BFS_Q.empty()){
+        Node* current = BFS_Q.front();
+        BFS_Q.pop();
+        while(current){
+            if(!result.find(current->getData())){
+                result.hire(current->getData(), current->getParent()->getData());
+            }
+            if (current->getChild()) {
+                BFS_Q.push(current->getChild());
+            }
+            current = current->getBrother();
+        }
+    }
+    return result;
 }
 
+void Hierarchy::setName(string nName) {
+    this->name = nName;
+}
+string Hierarchy::getName(){
+    return this->name;
+}

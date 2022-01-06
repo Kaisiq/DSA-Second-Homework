@@ -1,11 +1,4 @@
-#include "Node.h"
-
-Node::Node(std::string name){
-    this->data = name;
-    this->child = nullptr;
-    this->nextBrother = nullptr;
-    this->parent = nullptr;
-}
+Node::Node(std::string name, Node* child, Node* nextBrother, Node* parent): data(name), child(child), nextBrother(nextBrother), parent(parent){}
 
 Node::Node(){
     this->data = "";
@@ -15,11 +8,13 @@ Node::Node(){
 }
 
 Node::~Node(){
-    if(this->child  != NULL)
+    if(this->child)
         delete this->child;
-    if(this->nextBrother != NULL)
+    if(this->nextBrother)
         delete this->nextBrother;
 }
+
+
 Node& Node::operator= (const Node& other){
     if(this != &other){
         this->data = other.data;
@@ -46,19 +41,13 @@ Node* Node::getParent(){
 }
 
 void Node::setParent(Node *parent) {
-    if(this->parent)
-        delete this->parent;
     this->parent = parent;
 }
 
 void Node::setNextBrother(Node* next){
-    if(this->nextBrother)
-        delete this->nextBrother;
     this->nextBrother = next;
 }
 void Node::setChild(Node* child){
-    if(this->child)
-        delete this->child;
     this->child = child;
 }
 void Node::setData(std::string data){

@@ -4,8 +4,8 @@ project(DSA_Second_Homework)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(DSA_Second_Homework
-        #main.cpp
-        tests/tests.cpp
-
-
-        implementation/implementation.inl)
+        main.cpp
+#        tests/tests.cpp
+#        tests/NodeTests.cpp
+#        tests/HierarchyTests.cpp
+        )
